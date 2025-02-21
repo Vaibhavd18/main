@@ -1,0 +1,68 @@
+1. Using LIMIT with ORDER BY (MySQL, PostgreSQL)
+sql
+Copy
+Edit
+SELECT DISTINCT salary 
+FROM employees 
+ORDER BY salary DESC 
+LIMIT 1 OFFSET 1;
+✅ Explanation:
+ORDER BY salary DESC → Sorts salaries in descending order.
+DISTINCT → Ensures unique salaries.
+LIMIT 1 OFFSET 1 → Skips the highest salary and fetches the second-highest.
+2. Using MAX() with WHERE
+sql
+Copy
+Edit
+SELECT MAX(salary) 
+FROM employees 
+WHERE salary < (SELECT MAX(salary) FROM employees);
+✅ Explanation:
+The inner query retrieves the highest salary.
+The outer query finds the maximum salary less than the highest salary, effectively retrieving the second-highest salary.
+3. Using DENSE_RANK() (Recommended for Handling Ties)
+sql
+Copy
+Edit
+SELECT salary 
+FROM (
+    SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS rnk 
+    FROM employees
+) ranked
+WHERE rnk = 2;
+✅ Explanation:
+DENSE_RANK() assigns rank numbers without skipping ranks if salaries are duplicated.
+The outer query filters only the second-highest salary.
+4. Using ROW_NUMBER() (Ignores Duplicates)
+sql
+Copy
+Edit
+SELECT salary 
+FROM (
+    SELECT salary, ROW_NUMBER() OVER (ORDER BY salary DESC) AS rnk 
+    FROM employees
+) ranked
+WHERE rnk = 2;
+✅ Explanation:
+ROW_NUMBER() assigns unique row numbers.
+Works only if no duplicate salaries exist.
+5. Using NTH_VALUE() (SQL Server, PostgreSQL)
+sql
+Copy
+Edit
+SELECT DISTINCT NTH_VALUE(salary, 2) OVER (ORDER BY salary DESC) AS second_highest_salary
+FROM employees;
+✅ Explanation:
+NTH_VALUE(salary, 2) picks the second value from the sorted salary column.
+6. Using TOP with NOT IN (SQL Server)
+sql
+Copy
+Edit
+SELECT TOP 1 salary 
+FROM employees 
+WHERE salary NOT IN (SELECT MAX(salary) FROM employees) 
+ORDER BY salary DESC;
+✅ Explanation:
+SELECT MAX(salary) FROM employees gets the highest salary.
+NOT IN ensures the highest salary is excluded.
+TOP 1 fetches the next highest.
